@@ -1,6 +1,5 @@
 namespace EspCadeteria;
 using System.IO;
-using System.Text.Json;
 
 public class Cadeteria
 {
@@ -15,23 +14,31 @@ public class Cadeteria
     {
         this.Nombre = nombre;
         this.telefono = telefono;
-        this.lpedidos = new List<Pedido>();
     }
 
 
     public string Nombre { set => nombre = value; }
     public string Telefono { set => telefono = value; }
     public List<Cadete> LCadetes { get => lcadetes; set => lcadetes = value; }
-
+    public List<Pedido> LPedidos { get => lpedidos; set => lpedidos = value; }
 
     public static Cadeteria GetCadeteria()
     {
         if (cadSingleton == null)
         {
-            cadSingleton = DataAccess.CargarCSV();
+            cadSingleton = AccesoADatosCadeteria.Obtener();
+            cadSingleton.LCadetes = AccesoADatosCadetes.Obtener();
+            cadSingleton.LPedidos = AccesoADatosPedidos.Obtener();
+
+            cadSingleton.cantPedidos = cadSingleton.LPedidos.Count();
         }
 
         return cadSingleton;
+    }
+
+    public List<Cadete> GetCadetes()
+    {
+        return LCadetes;
     }
 
     public string MostrarNombreCadeteria()
@@ -52,7 +59,7 @@ public class Cadeteria
 
     public List<Pedido> ListaPedidos()
     {
-        return lpedidos;
+        return LPedidos;
     }
 
 
@@ -63,7 +70,9 @@ public class Cadeteria
         var Cliente = new Cliente(nombre, direccion, telefono, referencia);
         var Pedido = new Pedido(cantPedidos, obs, Cliente, Estados.Pendiente);
     
-        lpedidos.Add(Pedido);
+        LPedidos.Add(Pedido);
+
+        AccesoADatosPedidos.Guardar(LPedidos);
 
         return Pedido;
         
@@ -75,7 +84,10 @@ public class Cadeteria
 
         if(Ix != -1)
         {
-            lpedidos[Ix].Cadete = BuscarCadete(IdCad);
+            LPedidos[Ix].Cadete = BuscarCadete(IdCad);
+
+            AccesoADatosPedidos.Guardar(LPedidos);
+
             return true;
         } else
         {
@@ -88,9 +100,9 @@ public class Cadeteria
     {
         int index = -1;
 
-        for(int i=0; i<lpedidos.Count(); i++)
+        for(int i=0; i<LPedidos.Count(); i++)
         {
-            if(lpedidos[i].Nro == NroPed)
+            if(LPedidos[i].Nro == NroPed)
             {
                 index = i;
             }
@@ -107,11 +119,12 @@ public class Cadeteria
     public bool CambiarEst(int num, int estado)
     {
 
-        foreach(var ped in lpedidos)
+        foreach(var ped in LPedidos)
         {
             if(ped.Nro == num)
             {
                 ped.Estado = (Estados)estado;
+                AccesoADatosPedidos.Guardar(LPedidos);
                 return true;
             }
         }
@@ -119,31 +132,17 @@ public class Cadeteria
         return false;
     }
    
-   public bool ReasignarPedidoACadete(int NroPed, int IdCad)
-   {
-        int IndexPed = BuscarPedido(NroPed);
-
-        if(IndexPed != -1)
-        {
-            if(lpedidos[IndexPed].Estado == Estados.Pendiente)
-            {
-                AsignarCadeteAPedido(NroPed, IdCad);
-                return true;
-            } else return false;
-        } else return false;
-   }
-
     public float JornalACobrar(Cadete cad)
     {
-        return PedidosEntregados(cad)*500;
+        return PedidosEntregados(cad.Id)*500;
     }
 
-    public int PedidosEntregados(Cadete cad)
+    public int PedidosEntregados(int Id)
     {
         int cant = 0;
-        foreach (var ped in lpedidos)
+        foreach (var ped in ListaPedidos())
         {
-            if (ped.Cadete == cad && ped.Estado == Estados.Entregado)
+            if (ped.Cadete.Id == Id && ped.Estado == Estados.Entregado)
             {
                 cant++;
             }
@@ -161,12 +160,12 @@ public class Cadeteria
         {
             var infocadete = new InfCadete();
             infocadete.Cadete = cad.Nombre;
-            infocadete.CantEnvios = PedidosEntregados(cad);
+            infocadete.CantEnvios = PedidosEntregados(cad.Id);
             infocadete.MontoGanado = JornalACobrar(cad);
             
             info.Infocadete.Add(infocadete);
 
-            cantTotal += PedidosEntregados(cad);
+            cantTotal += PedidosEntregados(cad.Id);
             montoTotal += JornalACobrar(cad);
         }
 
@@ -246,117 +245,4 @@ public class Cliente
     public string Direccion { get => direccion; set => direccion = value; }
     public string Telefono { get => telefono; set => telefono = value; }
     public string DatosReferenciaDireccion { get => datosreferenciadireccion; set => datosreferenciadireccion = value; }
-}
-
-public abstract class DataAccess
-{
-    public abstract Cadeteria GetCadeteria(string file);
-    public abstract List<Cadete> GetCadetes(string file);
-
-    public static Cadeteria CargarCSV()
-    {
-        DataAccess DataCadeteria = new DataCSV();
-        return CargarDatos(DataCadeteria, "Cadeteria.csv", "Cadetes.csv");
-    }
-    public static Cadeteria CargarJson()
-    {
-        DataAccess DataCadeteria = new DataJson();
-        return CargarDatos(DataCadeteria, "Cadeteria.json", "Cadetes.json");
-    }
-
-    public static Cadeteria CargarDatos(DataAccess DataCadeteria, string FileCadeteria, string FileCadetes)
-    {
-        Cadeteria Cadeteria = null;
-        if(File.Exists(FileCadeteria) && File.Exists(FileCadetes))
-        {
-            Cadeteria = DataCadeteria.GetCadeteria(FileCadeteria);
-            Cadeteria.LCadetes = DataCadeteria.GetCadetes(FileCadetes);
-        } 
-
-        return Cadeteria;
-    }
-}
-
-public class DataCSV : DataAccess
-{
-    public override Cadeteria GetCadeteria(string file)
-    {
-        string linea, nombre="", telefono="";
-
-            using StreamReader archivo = new(file);
-
-            archivo.ReadLine();
-            linea = archivo.ReadLine();
-
-            string[] fila = linea.Split(';');
-            nombre = fila[0];
-            telefono = fila[1];
-
-            archivo.Close();
-
-
-        var cadeteria = new Cadeteria(nombre, telefono);
-
-        return cadeteria;
-    }
-
-    public override List<Cadete> GetCadetes(string file)
-    {
-        string linea;
-        var ListaCadetes = new List<Cadete>();
-
-            using StreamReader archivo = new(file);
-
-            archivo.ReadLine();
-
-            while ((linea = archivo.ReadLine()) != null)
-            {
-                string[] fila = linea.Split(';');
-                int id = Convert.ToInt32(fila[0]);
-                string nombre = fila[1];
-                string direccion = fila[2];
-                string telefono = fila[3];
-
-                var cadete = new Cadete(id, nombre, direccion, telefono);
-
-                ListaCadetes.Add(cadete);
-
-            }
-            archivo.Close();
-
-        return ListaCadetes;
-    }
-}
-
-public class DataJson : DataAccess
-{
-    public override Cadeteria GetCadeteria(string file)
-    {
-        Cadeteria cadeteria = null;
-
-            using StreamReader archivo = new(file);
-
-            string objson = archivo.ReadToEnd();
-            cadeteria = JsonSerializer.Deserialize<Cadeteria>(objson);
-            
-            archivo.Close();
-
-        return cadeteria;
-    }
-
-    public override List<Cadete> GetCadetes(string file)
-    {
-        var LCadetes = new List<Cadete>();
-
-            using StreamReader archivo = new(file);
-
-            string objson = archivo.ReadToEnd();
-            LCadetes = JsonSerializer.Deserialize<List<Cadete>>(objson);
-
-            archivo.Close();
-
-        return LCadetes;
-    }
-
-
 }
