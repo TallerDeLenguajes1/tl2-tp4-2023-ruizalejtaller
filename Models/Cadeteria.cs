@@ -1,5 +1,4 @@
 namespace EspCadeteria;
-using System.IO;
 
 public class Cadeteria
 {
@@ -46,7 +45,6 @@ public class Cadeteria
         return nombre;
     }
 
-
     public int NroCantPedidos()
     {
         return cantPedidos;
@@ -80,53 +78,38 @@ public class Cadeteria
 
     public bool AsignarCadeteAPedido(int NroPed, int IdCad)
     {
-        int Ix = BuscarPedido(NroPed);
+        var Ped = BuscarPedido(NroPed);
+        var Cad = BuscarCadete(IdCad);
 
-        if(Ix != -1)
+        if(Cad != null && Ped != null)
         {
-            LPedidos[Ix].Cadete = BuscarCadete(IdCad);
-
+            Ped.Cadete = Cad;
             AccesoADatosPedidos.Guardar(LPedidos);
-
             return true;
-        } else
-        {
-            return false;
         }
-
+        
+        return false;
     }
 
-    public int BuscarPedido(int NroPed)
+    public Pedido BuscarPedido(int NroPed)
     {
-        int index = -1;
-
-        for(int i=0; i<LPedidos.Count(); i++)
-        {
-            if(LPedidos[i].Nro == NroPed)
-            {
-                index = i;
-            }
-        }
-
-        return index;
+        return LPedidos.FirstOrDefault(ped => ped.Nro == NroPed);
     }
 
     public Cadete BuscarCadete(int idCad)
     {
-        return LCadetes.Find(cad => cad.Id == idCad);
+        return LCadetes.FirstOrDefault(cad => cad.Id == idCad);
     }
 
     public bool CambiarEst(int num, int estado)
     {
+        var ped = BuscarPedido(num);
 
-        foreach(var ped in LPedidos)
+        if (ped != null && ped.Estado==0 && (estado==1 || estado==2))
         {
-            if(ped.Nro == num)
-            {
-                ped.Estado = (Estados)estado;
-                AccesoADatosPedidos.Guardar(LPedidos);
-                return true;
-            }
+            ped.Estado = (Estados)estado;
+            AccesoADatosPedidos.Guardar(LPedidos);
+            return true;
         }
 
         return false;
@@ -139,15 +122,7 @@ public class Cadeteria
 
     public int PedidosEntregados(int Id)
     {
-        int cant = 0;
-        foreach (var ped in ListaPedidos())
-        {
-            if (ped.Cadete.Id == Id && ped.Estado == Estados.Entregado)
-            {
-                cant++;
-            }
-        }
-        return cant;
+       return LPedidos.Count(ped => ped.Cadete.Id == Id && ped.Estado == Estados.Entregado);
     }
 
     public Informe Informe()

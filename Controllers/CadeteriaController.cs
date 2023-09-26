@@ -38,10 +38,7 @@ public class CadeteriaController : ControllerBase
     [HttpGet("GetInforme")]
     public ActionResult<IEnumerable<Informe>> GetInforme()
     {
-
-        var informe = cad.Informe();
-
-        return Ok(informe);
+        return Ok(cad.Informe());
     }
 
     [HttpPost("AgregarPedido")]
@@ -61,20 +58,19 @@ public class CadeteriaController : ControllerBase
             return Ok("Pedido " + NroPedido + " asignado a: " + cad.BuscarCadete(idCadete).Nombre);
         } else
         {
-            return NotFound();
+            return NotFound("Error en número de Pedido o Cadete");
         }
     }
 
     [HttpPut("CambiarEstadoPedido")]
     public ActionResult<string> CambiarEstadoPedido(int NroPedido, int NuevoEstado)
     {
-        
         if(cad.CambiarEst(NroPedido, NuevoEstado))
         {
             return Ok("Pedido " + NroPedido + " cambio su estado a: " + (Estados)NuevoEstado);
         } else
         {
-            return NotFound();
+            return NotFound("Error en número de Pedido o Estado (1) Cancelado (2) Entregado");
         }
     }
 
@@ -87,7 +83,7 @@ public class CadeteriaController : ControllerBase
             return Ok("Pedido " + NroPedido + " reasignado a: " + cad.BuscarCadete(idNuevoCadete).Nombre);
         } else
         {
-            return NotFound();
+            return NotFound("Error en número de Pedido o Cadete");
         }
     }
 }
