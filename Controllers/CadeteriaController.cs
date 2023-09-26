@@ -32,7 +32,7 @@ public class CadeteriaController : ControllerBase
     [HttpGet("GetCadetes")]
     public ActionResult<IEnumerable<Cadete>> GetCadetes()
     {
-        return Ok(AccesoADatosCadetes.Obtener());
+        return Ok(cad.ListaCadetes());
     }
 
     [HttpGet("GetInforme")]

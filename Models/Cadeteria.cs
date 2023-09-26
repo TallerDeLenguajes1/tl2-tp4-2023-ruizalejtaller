@@ -11,13 +11,10 @@ public class Cadeteria
 
     public Cadeteria(string nombre, string telefono)
     {
-        this.Nombre = nombre;
+        this.nombre = nombre;
         this.telefono = telefono;
     }
 
-
-    public string Nombre { set => nombre = value; }
-    public string Telefono { set => telefono = value; }
     public List<Cadete> LCadetes { get => lcadetes; set => lcadetes = value; }
     public List<Pedido> LPedidos { get => lpedidos; set => lpedidos = value; }
 
