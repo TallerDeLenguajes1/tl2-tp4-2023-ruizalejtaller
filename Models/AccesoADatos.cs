@@ -1,9 +1,9 @@
 namespace EspCadeteria;
 using System.Text.Json;
 
-public static class AccesoADatosCadeteria
+public class AccesoADatosCadeteria
 {
-    public static Cadeteria Obtener()
+    public Cadeteria Obtener()
     {
         return DataAccess.CargarCSVCadeteria();
     }
@@ -11,7 +11,7 @@ public static class AccesoADatosCadeteria
 
 public class AccesoADatosCadetes
 {
-    public static List<Cadete> Obtener()
+    public List<Cadete> Obtener()
     {
         return DataAccess.CargarCSVCadetes();
     }
@@ -19,12 +19,12 @@ public class AccesoADatosCadetes
 
 public class AccesoADatosPedidos
 {
-    public static List<Pedido> Obtener()
+    public List<Pedido> Obtener()
     {
         return DataAccess.CargarPedidos();
     }
 
-    public static void Guardar (List<Pedido> LPed)
+    public void Guardar (List<Pedido> LPed)
     {
         DataAccess.GuardarPedidos(LPed);
     }

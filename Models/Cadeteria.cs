@@ -8,6 +8,8 @@ public class Cadeteria
     private List<Cadete> lcadetes;
     private List<Pedido> lpedidos;
     private static Cadeteria cadSingleton;
+    private  AccesoADatosCadetes accesocadetes;
+    private  AccesoADatosPedidos accesopedidos;
 
     public Cadeteria(string nombre, string telefono)
     {
@@ -22,14 +24,32 @@ public class Cadeteria
     {
         if (cadSingleton == null)
         {
-            cadSingleton = AccesoADatosCadeteria.Obtener();
-            cadSingleton.LCadetes = AccesoADatosCadetes.Obtener();
-            cadSingleton.LPedidos = AccesoADatosPedidos.Obtener();
+           var accesocad = new AccesoADatosCadeteria();
+           var accesocadetes = new AccesoADatosCadetes();
+           var accesopedidos = new AccesoADatosPedidos();
+
+            cadSingleton = accesocad.Obtener();
+
+            cadSingleton.accesocadetes = accesocadetes;
+            cadSingleton.accesopedidos = accesopedidos;
+
+            cadSingleton.CargarCadetes();
+            cadSingleton.CargarPedidos();
 
             cadSingleton.cantPedidos = cadSingleton.LPedidos.Count();
         }
 
         return cadSingleton;
+    }
+
+    public void CargarCadetes()
+    {
+        LCadetes = accesocadetes.Obtener();
+    }
+
+    public void CargarPedidos()
+    {
+        LPedidos = accesopedidos.Obtener();
     }
 
     public List<Cadete> GetCadetes()
@@ -67,7 +87,7 @@ public class Cadeteria
     
         LPedidos.Add(Pedido);
 
-        AccesoADatosPedidos.Guardar(LPedidos);
+        accesopedidos.Guardar(LPedidos);
 
         return Pedido;
         
@@ -81,7 +101,7 @@ public class Cadeteria
         if(Cad != null && Ped != null)
         {
             Ped.Cadete = Cad;
-            AccesoADatosPedidos.Guardar(LPedidos);
+            accesopedidos.Guardar(LPedidos);
             return true;
         }
         
@@ -105,7 +125,7 @@ public class Cadeteria
         if (ped != null && ped.Estado==0 && (estado==1 || estado==2))
         {
             ped.Estado = (Estados)estado;
-            AccesoADatosPedidos.Guardar(LPedidos);
+            accesopedidos.Guardar(LPedidos);
             return true;
         }
 
