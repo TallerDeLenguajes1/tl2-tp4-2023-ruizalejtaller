@@ -93,6 +93,16 @@ public class Cadeteria
         
     }
 
+    public void AltaCadete(Cadete Cad)
+    {
+        Cad.Id = LCadetes.Max(cad => cad.Id)+1;
+
+        LCadetes.Add(Cad);
+
+        accesocadetes.Guardar(LCadetes);
+
+    }
+
     public bool AsignarCadeteAPedido(int NroPed, int IdCad)
     {
         var Ped = BuscarPedido(NroPed);
@@ -185,7 +195,7 @@ public class Cadete
         telefono = Telefono;
     }
 
-    public int Id { get => id; }
+    public int Id { get => id; set => id = value; }
     public string Nombre { get => nombre; }
     public string Direccion { get => direccion; }
     public string Telefono { get => telefono; }

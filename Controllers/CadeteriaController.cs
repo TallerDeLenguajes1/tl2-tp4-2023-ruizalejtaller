@@ -29,10 +29,22 @@ public class CadeteriaController : ControllerBase
         return Ok(cad.ListaPedidos());
     }
 
+    [HttpGet("GetPedido/{id}")]
+    public ActionResult<Pedido> GetPedido(int id)
+    {
+        return Ok(cad.BuscarPedido(id));
+    }
+
     [HttpGet("GetCadetes")]
     public ActionResult<IEnumerable<Cadete>> GetCadetes()
     {
         return Ok(cad.ListaCadetes());
+    }
+
+    [HttpGet("GetCadete/{id}")]
+    public ActionResult<Cadete> GetCadete(int id)
+    {
+        return Ok(cad.BuscarCadete(id));
     }
 
     [HttpGet("GetInforme")]
@@ -47,6 +59,14 @@ public class CadeteriaController : ControllerBase
         var ped = cad.AltaPedido(nombreCliente, dirCliente, telCliente, refDireccion, obs);
 
         return Ok(ped);
+    }
+
+    [HttpPost("AgregarCadete")]
+    public ActionResult AgregarCadete(Cadete Cad)
+    {
+        cad.AltaCadete(Cad);
+
+        return Ok();
     }
 
     [HttpPut("AsignarPedido")]
